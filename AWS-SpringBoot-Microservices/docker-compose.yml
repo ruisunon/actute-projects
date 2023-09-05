@@ -1,0 +1,112 @@
+services:
+  serviceregistry:
+    container_name: serviceregistry
+    environment:
+      REGISTRY_SERVER: http://serviceregistry:8761/eureka
+    image: justadvancetechnology/serviceregitsry_v1
+    ports:
+    - target: 8761
+      x-aws-protocol: http
+  
+  configserver:
+    container_name: configserver
+    environment:
+      - eureka.client.serviceUrl.defaultZone=http://serviceregistry:8761/eureka
+    image: justadvancetechnology/configserver_v1
+    depends_on:
+     - serviceregistry
+
+  hotelservice:
+    container_name: hotelservice
+    environment:
+      eureka.client.serviceUrl.defaultZone: "http://serviceregistry:8761/eureka"
+      DB_URL: "jdbc:postgresql://HotelDB:5432/Hotel"
+    image: justadvancetechnology/hotelservice_v1
+    ports:
+    - target: 8082
+      x-aws-protocol: http
+    depends_on:
+     - HotelDB
+     - serviceregistry
+
+  ratingservice:
+    container_name: ratingservice
+    environment:
+      eureka.client.serviceUrl.defaultZone: "http://serviceregistry:8761/eureka"
+      DB_URL: "mongodb://mongo:mongo@mongoDB:27017/microservices?authSource=admin"
+      RATING_USERS: "http://RATING-SERVICE/ratings/users"
+      RATING: "http://RATING-SERVICE/ratings"
+    image: justadvancetechnology/ratingservice_v1
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1Gb
+    ports:
+    - target: 8083
+      x-aws-protocol: http
+    depends_on:
+     - mongodb
+    #  - UserDB
+     - serviceregistry
+     - hotelservice
+
+  # userservice:
+  #   container_name: userservice
+  #   environment:
+  #     EUREKA_URL: "http://serviceregistry:8761/eureka"
+  #     DB_URL: "jdbc:postgresql://UserDB:5432/User"
+  #     RATINGSERVICE_URL: "http://RATING-SERVICE"
+  #     HOTELSERVICE_URL: "http://HOTEL-SERVICE/"
+  #   image: justadvancetechnology/userservice_v1
+  #   ports:
+  #   - target: 8081
+  #     x-aws-protocol: http
+  #   depends_on:
+  #    - UserDB
+  #    - serviceregistry
+  #    - ratingservice
+  #    - hotelservice
+
+  # apigateway:
+  #   container_name: apigateway
+  #   environment:
+  #     EUREKA_URL: "http://serviceregistry:8761/eureka"
+  #     DB_URL: "jdbc:postgresql://UserDB:5432/User"
+  #     RATING_SERVICE: "lb://RATING-SERVICE"
+  #     HOTEL_SERVICE: "lb://HOTEL-SERVICE"
+  #     USER_SERVICE: "lb://USER-SERVICE"
+  #   image: justadvancetechnology/apigateway_v1
+  #   depends_on:
+  #    - UserDB
+  #    - serviceregistry
+  #    - ratingservice
+  #    - hotelservice
+  #    - userservice
+
+
+  # UserDB:
+  #   container_name: UserDB
+  #   image: postgres
+  #   environment:
+  #     POSTGRES_DB: User
+  #     POSTGRES_USER: User
+  #     POSTGRES_PASSWORD: User
+
+  HotelDB:
+    container_name: HotelDB
+    image: postgres
+    environment:
+      DB_URL: "jdbc:postgresql://HotelDB:5432/"
+      POSTGRES_DB: Hotel
+      POSTGRES_USER: Hotel
+      POSTGRES_PASSWORD: Hotel
+
+
+  mongodb:
+    container_name: mongoDB
+    image: mongo
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=mongo
+      - MONGO_INITDB_ROOT_PASSWORD=mongo

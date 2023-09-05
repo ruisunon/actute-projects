@@ -1,0 +1,17 @@
+server:
+  port: 80
+  # servlet:
+  #  context-path: /registry-server
+eureka:
+  instance:
+    prefer-ip-address: true
+    hostname: RegistryServer
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 90
+
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+    refresh:
+      enable: true
+

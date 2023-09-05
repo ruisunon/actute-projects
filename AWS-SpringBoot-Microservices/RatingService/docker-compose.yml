@@ -1,0 +1,52 @@
+services:
+  ratingservice:
+    container_name: ratingservice
+    environment:
+      eureka.client.serviceUrl.defaultZone: "http://servi-loadb-1m010cvxc8v81-1110713425.us-east-2.elb.amazonaws.com/eureka"
+      DB_URL: "mongodb://mongo:mongo@mongoDB:27017/microservices?authSource=admin"
+      RATING_USERS: "http://RATING-SERVICE/ratings/users"
+      RATING: "http://RATING-SERVICE/ratings"
+    image: justadvancetechnology/ratingservice_wh_3
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    deploy:
+      replicas: 1
+      # x-aws-autoscaling:
+      #   min: 1
+      #   max: 2 
+      #   cpu: 75
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2Gb
+    ports:
+    - target: 80
+      x-aws-protocol: http
+      # - 80:80
+    depends_on:
+     - mongodb
+    restart: unless-stopped
+    healthcheck:
+      test: "curl -f http://127.0.0.1:80/actuator/health/ || exit 1"
+      interval: "5m"
+      timeout: "5s"
+      start_period: "10s"
+      retries: 3
+ 
+  mongodb:
+    container_name: mongoDB
+    image: mongo
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1Gb 
+    # ports:
+    #   - 5552:27017
+    environment:
+      # - MONGO_INITDB_DATABASE=mongodb
+      - MONGO_INITDB_ROOT_USERNAME=mongo
+      - MONGO_INITDB_ROOT_PASSWORD=mongo
+    restart: unless-stopped

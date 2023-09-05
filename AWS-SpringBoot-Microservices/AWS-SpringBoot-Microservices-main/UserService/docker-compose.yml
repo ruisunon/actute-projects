@@ -1,0 +1,50 @@
+services:
+  userservice:
+    container_name: userservice
+    environment:
+      EUREKA_URL: "http://servi-loadb-1m010cvxc8v81-1110713425.us-east-2.elb.amazonaws.com/eureka"
+      DB_URL: "jdbc:postgresql://UserDB:5432/User"
+      RATINGSERVICE_URL: "http://RATING-SERVICE"
+      HOTELSERVICE_URL: "http://HOTEL-SERVICE/"
+    image: justadvancetechnology/userservice_wh_3
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2Gb
+    ports:
+    - target: 80
+      x-aws-protocol: http
+      #  - 80:80
+    depends_on:
+     - UserDB
+    restart: unless-stopped
+    healthcheck:
+      # test: curl --fail http://127.0.0.1:80/ || exit 1
+      test: "curl -f http://127.0.0.1:80/actuator/health/ || exit 1"
+      interval: "5m"
+      timeout: "5s"
+      start_period: "10s"
+      retries: 3
+    
+
+  UserDB:
+    container_name: UserDB
+    image: postgres
+    deploy:
+     replicas: 1
+     resources:
+       limits:
+         cpus: '0.5'
+         memory: 1Gb
+    environment:
+      POSTGRES_DB: User
+      POSTGRES_USER: User
+      POSTGRES_PASSWORD: User
+    # ports:
+    #    - "5550:5432"
+    restart: unless-stopped

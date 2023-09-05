@@ -1,0 +1,32 @@
+server:
+  port: 80
+
+spring:
+  application:
+    name: CONFIGURATION-SERVER
+
+eureka:
+  instance:
+    prefer-ip-address: true
+    hostname: CONFIGURATION-SERVER
+    appname: CONFIGURATION-SERVER
+
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    registry-fetch-interval-seconds: 30
+    refresh:
+      enable: true
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/registry-server/eureka}
+#      http://serviceregistry:8761/eureka/
+      # defaultZone:  http://serviceregitsry-production.up.railway.app/eureka
+
+
+# spring:
+#   cloud:
+#     config:
+#       server:
+#         git:
+#           uri: https://github.com/praveen1664/Microservices-Configuration.git
+#           clone-on-start: true

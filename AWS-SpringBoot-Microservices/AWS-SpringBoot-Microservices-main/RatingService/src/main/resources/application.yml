@@ -1,0 +1,28 @@
+server:
+  port: 80
+
+spring:
+  application:
+    name: RATING-SERVICE
+  data:
+    mongodb:
+      uri: ${DB_URL:mongodb://mongo:mongo@localhost:5552/microservices?authSource=admin}
+      # uri: mongodb://mongo:uiYWYK5CNBevcnRrzoXs@containers-us-west-60.railway.app:6843/microservices?authSource=admin
+      database: microservices
+  # config:
+  #   import: configserver:http://localhost:8085
+#documentation:
+#  baseurl: '/'
+eureka:
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 10
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    registry-fetch-interval-seconds: 30
+    refresh:
+      enable: true
+    service-url:
+      defaultZone:  "http://servi-loadb-1m010cvxc8v81-1110713425.us-east-2.elb.amazonaws.com/eureka"
+      # defaultZone:  https://serviceregitsry-production.up.railway.app/eureka

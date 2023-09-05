@@ -1,0 +1,53 @@
+services:
+  hotelservice:
+    container_name: hotelservice
+    environment:
+      eureka.client.serviceUrl.defaultZone: "http://servi-loadb-1m010cvxc8v81-1110713425.us-east-2.elb.amazonaws.com/eureka" 
+      DB_URL: "jdbc:postgresql://HotelDB:5432/Hotel"
+      DOCKER_HEALTHCHECK_TEST: /bin/true
+    image: justadvancetechnology/hotelservice_wh_3p1
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    deploy:
+      replicas: 1
+      # x-aws-autoscaling:
+      #   min: 1
+      #   max: 2 
+      #   cpu: 75
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2Gb
+    ports:
+    - target: 80
+      x-aws-protocol: http
+      # - 80:80
+    depends_on:
+     - HotelDB
+    restart: unless-stopped
+    healthcheck:
+      # test: "curl --fail http://127.0.0.1:80 || exit 1"
+      test: "curl -f http://127.0.0.1:80/actuator/health/ || exit 1"
+      interval: "5m"
+      timeout: "5s"
+      start_period: "10s"
+      retries: 3
+
+  HotelDB:
+    container_name: HotelDB
+    image: postgres
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1Gb
+    environment:
+      DB_URL: "jdbc:postgresql://HotelDB:5432/"
+      POSTGRES_DB: Hotel
+      POSTGRES_USER: Hotel
+      POSTGRES_PASSWORD: Hotel
+    # ports:
+    #   - "5551:5432"
+    restart: unless-stopped
